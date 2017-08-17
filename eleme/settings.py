@@ -117,11 +117,11 @@ BAIDU_AK = "YOUR_BAIDU_AK"
 
 
 # Abuyun Proxy Settings (https://www.abuyun.com/)
-proxyEnabled = True
-proxyServer = "http://proxy.abuyun.com:9020"
-proxyUser = "YOUR_ABUYUN_proxyUser" # 通行证书
-proxyPass = "YOUR_ABUYUN_proxyPass" # 通行密钥
-proxyAuth = "Basic " + base64.b64encode(proxyUser + ":" + proxyPass)
+PROXY_ENABLED = True
+PROXY_SERVER = "http://proxy.abuyun.com:9020"
+PROXY_USER = "YOUR_ABUYUN_PROXY_USER" # 通行证书
+PROXY_PASS = "YOUR_ABUYUN_PROXY_PASS" # 通行密钥
+PROXY_AUTH = "Basic " + base64.b64encode(PROXY_USER + ":" + PROXY_PASS)
 
 
 # Points Area Settings
