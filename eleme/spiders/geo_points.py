@@ -15,7 +15,7 @@ def get_allpoints(lat1, lng1, lat2, lng2, d_lat, d_lng, other_area=None, edge=Fa
     if edge:
         all_lat.append(lat2)
         all_lng.append(lng2)
-    points = [[i, j] for i in set(all_lat) for j in set(all_lng)] # set为避免重复取点
+    points = [[i, j] for i in set(all_lat) for j in set(all_lng)]  # set为避免重复取点
     if other_area is not None:
         for area in other_area:
             lat1, lng1, lat2, lng2, d_lat, d_lng = area
@@ -29,31 +29,32 @@ def get_allpoints(lat1, lng1, lat2, lng2, d_lat, d_lng, other_area=None, edge=Fa
 
 class GeoPointsSpider(scrapy.Spider):
     """获取指定范围内属于某个市的点
-    
+
     先通过指定的坐标范围与取点密度，获取所有坐标点，拼接URL
     再根据百度地图API的返回结果判断城市，如果是所需要的城市，则交给pipeline
     """
-    
+
     name = "geo_points"
     custom_settings = {"DOWNLOAD_DELAY": 0}
     allowed_domains = ["baidu.com"]
     base_url = "http://api.map.baidu.com/geocoder/v2/?"
-    start_urls = []
-    params = {
-        "coordtype": "gcj02ll",
-        "location": "",
-        "ak": settings.BAIDU_AK,
-        "output": "json"
-    }
-    lat1, lng1, lat2, lng2, d_lat, d_lng = settings.POINTS_RANGE
-    points = get_allpoints(
-        lat1, lng1, lat2, lng2, d_lat, d_lng,
-        other_area=settings.POINTS_OTHER_AREA,
-        edge=settings.POINTS_AREA_EDGE
-    )
-    for point in points:
-        params["location"] = "%s,%s" % (point[0], point[1])
-        start_urls.append(base_url + urllib.urlencode(params))
+
+    def start_requests(self):
+        params = {
+            "coordtype": "gcj02ll",
+            "location": "",
+            "ak": settings.BAIDU_AK,
+            "output": "json"
+        }
+        lat1, lng1, lat2, lng2, d_lat, d_lng = settings.POINTS_RANGE
+        points = get_allpoints(
+            lat1, lng1, lat2, lng2, d_lat, d_lng,
+            other_area=settings.POINTS_OTHER_AREA,
+            edge=settings.POINTS_AREA_EDGE
+        )
+        for point in points:
+            params["location"] = "%s,%s" % (point[0], point[1])
+            yield scrapy.Request(self.base_url + urllib.urlencode(params))
 
     def parse(self, response):
         jsondata = json.loads(response.text)

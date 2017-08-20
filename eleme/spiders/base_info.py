@@ -11,7 +11,7 @@ from eleme.mysqlhelper import *
 
 class BaseInfoSpider(scrapy.Spider):
     """从搜索页爬取商家的基本信息
-    
+
     从数据库提取尚爬取的坐标点，拼接url，添加到start_urls中
     对于每次爬取，从中提取出每个商家信息，交给pipeline
     如果当前坐标点还有其他商家未获取，则offset加上30，重新爬取
@@ -19,20 +19,22 @@ class BaseInfoSpider(scrapy.Spider):
     name = "base_info"
     allowed_domains = ["ele.me"]
     base_url = "https://mainsite-restapi.ele.me/shopping/restaurants" + "?extras[]=activities&extras[]=flavors&"
-    start_urls = []
-    # 饿了么的搜索页面每页最多30个商家，并且每个搜索组合只能获取最多750个
-    params = {
-        "latitude": "",
-        "longitude": "",
-        "offset": 0,
-        "limit": 30,
-        "order_by": 5  ## order_by=5表示按商家距离排序
-    }
-    cur.execute("SELECT latitude, longitude FROM all_points WHERE status IS NULL")
-    geo_data = cur.fetchall()
-    for geo_point in geo_data:
-        params["latitude"], params["longitude"] = geo_point
-        start_urls.append(base_url + urllib.urlencode(params))
+
+    def start_requests(self):
+        start_urls = []
+        # 饿了么的搜索页面每页最多30个商家，并且每个搜索组合只能获取最多750个
+        params = {
+            "latitude": "",
+            "longitude": "",
+            "offset": 0,
+            "limit": 30,
+            "order_by": 5  # order_by=5表示按商家距离排序
+        }
+        cur.execute("SELECT latitude, longitude FROM all_points WHERE status IS NULL")
+        geo_data = cur.fetchall()
+        for geo_point in geo_data:
+            params["latitude"], params["longitude"] = geo_point
+            yield scrapy.Request(self.base_url + urllib.urlencode(params))
 
     def parse(self, response):
         jsondata = json.loads(response.text)
