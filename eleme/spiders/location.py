@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-import urllib
+from urllib.parse import urlencode
 
 import scrapy
 
@@ -32,7 +32,7 @@ class LocationSpider(scrapy.Spider):
         }
         for geo_point in all_restaurant_location:
             params["location"] = "%s,%s" % (geo_point[1], geo_point[2])
-            url = self.base_url + urllib.urlencode(params)
+            url = self.base_url + urlencode(params)
             yield scrapy.Request(url, meta={"restaurant_id": geo_point[0]})
 
     def parse(self, response):

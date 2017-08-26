@@ -14,13 +14,11 @@ import mysql.connector
 from eleme import settings
 from eleme.mysqlhelper import *
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 
 class ElemePipeline(object):
     """处理所爬取的每个item，大部分为数据库操作
     """
+
     def process_item(self, item, spider):
         # 根据spider名称选择需要进行的操作
         if "geo_points" == spider.name:
@@ -59,7 +57,7 @@ class ElemePipeline(object):
         """
         sql = "INSERT INTO menu_info (restaurant_id, menu) VALUES ('%s', '%s')"
         # 为避免一些很神奇的错误，先进行BASE64编码
-        menu_data = base64.b64encode(item["menu"].decode("utf-8"))
+        menu_data = base64.b64encode(item["menu"].encode("utf-8")).decode()
         cur.execute(sql % (item["restaurant_id"], menu_data))
         cnx.commit()
 
@@ -69,8 +67,7 @@ class ElemePipeline(object):
         keys = ["compare_rating", "food_score", "positive_rating", "service_score", "star_level"]
         if keys[0] in item.keys():
             item_keys = item.keys()
-            item_keys.remove("restaurant_id")
-            key_value = ["`%s`='%s'" % (key, item[key]) for key in item_keys]
+            key_value = ["`%s`='%s'" % (key, item[key]) for key in item_keys if key != "restaurant_id"]
         else:
             key_value = ["`%s`='-1'" % key for key in keys]
         key_value = ", ".join(key_value)
@@ -93,7 +90,8 @@ class ElemePipeline(object):
             # 如果是可迭代对象但不是字符串（比如dict或list）
             # 则先转换为JSON字符串，再进行BASE64编码，再插入数据库
             if hasattr(item[key], "__iter__") and not isinstance(item[key], str):
-                value[key] = base64.b64encode(json.dumps(item[key], ensure_ascii=False))
+                value_str = json.dumps(item[key], ensure_ascii=False).encode("utf-8")
+                value[key] = base64.b64encode(value_str).decode()
             else:
                 value[key] = item[key]
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-import urllib
+from urllib.parse import unquote, urlencode
 
 import scrapy
 
@@ -34,7 +34,7 @@ class BaseInfoSpider(scrapy.Spider):
         geo_data = cur.fetchall()
         for geo_point in geo_data:
             params["latitude"], params["longitude"] = geo_point
-            yield scrapy.Request(self.base_url + urllib.urlencode(params))
+            yield scrapy.Request(self.base_url + urlencode(params))
 
     def parse(self, response):
         jsondata = json.loads(response.text)
@@ -53,7 +53,7 @@ class BaseInfoSpider(scrapy.Spider):
 
         # 提取URL参数
         params = {}
-        query = urllib.unquote(response.url).split("?")[1]
+        query = unquote(response.url).split("?")[1]
         for key_value in query.split("&"):
             key, value = key_value.split("=")
             if "extras[]" != key:
@@ -62,7 +62,7 @@ class BaseInfoSpider(scrapy.Spider):
         if "720" != params["offset"] and 30 == len(jsondata):
             # 如果当前不是最后一页并且当前页面的商家数是30个，则当前坐标点（很可能）还有未爬取的商家
             params["offset"] = int(params["offset"]) + 30
-            url = self.base_url + urllib.urlencode(params)
+            url = self.base_url + urlencode(params)
             yield scrapy.Request(url, self.parse)
         elif 200 == response.status:
             # 如果正常返回，并且已经没有没有未爬取的商家，则把坐标点已爬取状态设为“OK”

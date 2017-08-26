@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-import urllib
+from urllib.parse import unquote, urlencode
 
 import scrapy
 
@@ -54,14 +54,14 @@ class GeoPointsSpider(scrapy.Spider):
         )
         for point in points:
             params["location"] = "%s,%s" % (point[0], point[1])
-            yield scrapy.Request(self.base_url + urllib.urlencode(params))
+            yield scrapy.Request(self.base_url + urlencode(params))
 
     def parse(self, response):
         jsondata = json.loads(response.text)
         item = GeoPointsItem()
-        city = jsondata["result"]["addressComponent"]["city"].decode("utf-8")  # 从结果中提取城市名称
-        if settings.POINTS_CITY.decode("utf-8") == city:
-            query = urllib.unquote(response.url).split("?")[1]
+        city = jsondata["result"]["addressComponent"]["city"]  # 从结果中提取城市名称
+        if settings.POINTS_CITY == city:
+            query = unquote(response.url).split("?")[1]
             for key_value in query.split("&"):
                 key, value = key_value.split("=")
                 if "location" == key:

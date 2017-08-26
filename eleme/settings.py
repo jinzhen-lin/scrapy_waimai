@@ -119,9 +119,9 @@ BAIDU_AK = "YOUR_BAIDU_AK"
 # Abuyun Proxy Settings (https://www.abuyun.com/)
 PROXY_ENABLED = True
 PROXY_SERVER = "http://proxy.abuyun.com:9020"
-PROXY_USER = "YOUR_ABUYUN_PROXY_USER" # 通行证书
-PROXY_PASS = "YOUR_ABUYUN_PROXY_PASS" # 通行密钥
-PROXY_AUTH = "Basic " + base64.b64encode(PROXY_USER + ":" + PROXY_PASS)
+PROXY_USER = b"YOUR_ABUYUN_PROXY_USER" # 通行证书
+PROXY_PASS = b"YOUR_ABUYUN_PROXY_PASS" # 通行密钥
+PROXY_AUTH = b"Basic " + base64.b64encode(PROXY_USER + b":" + PROXY_PASS)
 
 
 # Points Area Settings

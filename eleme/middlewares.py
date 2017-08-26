@@ -23,9 +23,9 @@ class ElemeDownloaderMiddleware(UserAgentMiddleware):
         self.user_agent = user_agent
 
     def process_request(self, request, spider):
+        ua = random.choice(settings.USER_AGENTS_LIST)
+        request.headers.setdefault('User-Agent', ua)
         if "ele.me" == spider.allowed_domains[0] and settings.PROXY_ENABLED:
-            ua = random.choice(settings.USER_AGENTS_LIST)
-            request.headers.setdefault('User-Agent', ua)
             request.meta["proxy"] = settings.PROXY_SERVER
             request.headers["Proxy-Authorization"] = settings.PROXY_AUTH
 

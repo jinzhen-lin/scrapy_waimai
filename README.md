@@ -5,7 +5,7 @@
 
 
 ## 依赖
-- Python 2.7
+- Python 3.6
 - Scrapy: `pip install scrapy`
 - MySQL
 - mysql-connector-python: `pip install mysql-connector-python-rf`
