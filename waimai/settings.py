@@ -99,8 +99,16 @@ ITEM_PIPELINES = {
 
 
 # Mysql Setting
+# WAIMAI_PLATFORM 外卖平台，仅用来选择数据库名称
+WAIMAI_PLATFORM = "eleme"
+# MYSQL_DBNAME_LIST 指定各外卖平台爬取时存取数据使用的数据库
+MYSQL_DBNAME_LIST = {
+    "eleme": "eleme",
+    "meituan": "meituan",
+    "baidu": "baidu"
+}
 MYSQL_HOST = '127.0.0.1'
-MYSQL_DBNAME = 'eleme'
+MYSQL_DBNAME = MYSQL_DBNAME_LIST[WAIMAI_PLATFORM]
 MYSQL_USER = 'root'
 MYSQL_PASSWD = 'YOUR_MYSQL_PASSWORD'
 MYSQL_PORT = 3306
@@ -119,8 +127,8 @@ BAIDU_AK = "YOUR_BAIDU_AK"
 # Abuyun Proxy Settings (https://www.abuyun.com/)
 PROXY_ENABLED = True
 PROXY_SERVER = "http://proxy.abuyun.com:9020"
-PROXY_USER = b"YOUR_ABUYUN_PROXY_USER" # 通行证书
-PROXY_PASS = b"YOUR_ABUYUN_PROXY_PASS" # 通行密钥
+PROXY_USER = b"YOUR_ABUYUN_PROXY_USER"  # 通行证书
+PROXY_PASS = b"YOUR_ABUYUN_PROXY_PASS"  # 通行密钥
 PROXY_AUTH = b"Basic " + base64.b64encode(PROXY_USER + b":" + PROXY_PASS)
 
 
