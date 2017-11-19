@@ -14,7 +14,7 @@ class ElemeMenuSpider(scrapy.Spider):
     获取尚未获取menu的商家ID，拼接URL构建start_urls
     把结果交给pipeline
     """
-    name = "waimai_menu"
+    name = "eleme_menu"
     allowed_domains = ["ele.me"]
     base_url = "https://www.ele.me/restapi/shopping/v2/menu?restaurant_id="
 

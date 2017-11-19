@@ -14,7 +14,7 @@ from waimai import settings
 from waimai.mysqlhelper import *
 
 
-class ElemePipeline(object):
+class WaimaiPipeline(object):
     """处理所爬取的每个item，大部分为数据库操作
     """
 
@@ -22,15 +22,15 @@ class ElemePipeline(object):
         # 根据spider名称选择需要进行的操作
         if "geo_points" == spider.name:
             self.insert_point(item)
-        elif "base_info" == spider.name:
+        elif "eleme_base_info" == spider.name:
             # 如果数据库中没有这个商家则插入，有这个商家则跳过
             if not self.select_restaurant_id(item["restaurant_id"]):
                 self.insert_restaurant_info(item)
-        elif "menu" == spider.name:
+        elif "eleme_menu" == spider.name:
             self.insert_menu(item)
-        elif "rating_scores" == spider.name:
+        elif "eleme_rating_scores" == spider.name:
             self.update_rating_scores(item)
-        elif "location" == spider.name:
+        elif "eleme_location" == spider.name:
             self.update_location(item)
 
     def insert_point(self, item):

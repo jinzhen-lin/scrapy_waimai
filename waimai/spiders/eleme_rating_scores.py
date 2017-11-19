@@ -14,7 +14,7 @@ class ElemeRatingScoresSpider(scrapy.Spider):
     获取尚未爬取评分的商家ID，拼接URL构建start_urls
     把结果交给pipeline
     """
-    name = "waimai_rating_scores"
+    name = "eleme_rating_scores"
     allowed_domains = ["ele.me"]
     base_url = "https://www.ele.me/restapi/ugc/v1/restaurants/%s/rating_scores?latitude=%s&longitude=%s"
 
