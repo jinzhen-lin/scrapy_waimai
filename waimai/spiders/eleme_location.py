@@ -4,18 +4,18 @@ from urllib.parse import urlencode
 
 import scrapy
 
-from eleme import settings
-from eleme.items import LocationItem
-from eleme.mysqlhelper import *
+from waimai import settings
+from waimai.items import ElemeLocationItem
+from waimai.mysqlhelper import *
 
 
-class LocationSpider(scrapy.Spider):
+class ElemeLocationSpider(scrapy.Spider):
     """获取商家所在的district（市辖区/县级市/县）
 
     从数据库提取尚未获取district的商家ID和位置，拼接URL构建start_urls
     从结果中提取坐标点对应的district和address，交给pipeline
     """
-    name = "location"
+    name = "eleme_location"
     custom_settings = {"DOWNLOAD_DELAY": 0}
     allowed_domains = ["baidu.com"]
     base_url = "http://api.map.baidu.com/geocoder/v2/?"
@@ -37,7 +37,7 @@ class LocationSpider(scrapy.Spider):
 
     def parse(self, response):
         jsondata = json.loads(response.text)
-        item = LocationItem()
+        item = ElemeLocationItem()
         address = jsondata["result"]["addressComponent"]
         item["district"] = address["city"] + address["district"]
         item["address"] = jsondata["result"]["formatted_address"]

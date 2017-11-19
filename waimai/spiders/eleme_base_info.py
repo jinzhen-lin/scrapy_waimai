@@ -4,19 +4,19 @@ from urllib.parse import unquote, urlencode
 
 import scrapy
 
-from eleme import settings
-from eleme.items import BaseInfoItem
-from eleme.mysqlhelper import *
+from waimai import settings
+from waimai.items import ElemeBaseInfoItem
+from waimai.mysqlhelper import *
 
 
-class BaseInfoSpider(scrapy.Spider):
+class ElemeBaseInfoSpider(scrapy.Spider):
     """从搜索页爬取商家的基本信息
 
     从数据库提取尚爬取的坐标点，拼接url，添加到start_urls中
     对于每次爬取，从中提取出每个商家信息，交给pipeline
     如果当前坐标点还有其他商家未获取，则offset加上30，重新爬取
     """
-    name = "base_info"
+    name = "eleme_base_info"
     allowed_domains = ["ele.me"]
     base_url = "https://mainsite-restapi.ele.me/shopping/restaurants" + "?extras[]=activities&extras[]=flavors&"
 
@@ -39,7 +39,7 @@ class BaseInfoSpider(scrapy.Spider):
     def parse(self, response):
         jsondata = json.loads(response.text)
         for restaurant_data in jsondata:
-            item = BaseInfoItem()
+            item = ElemeBaseInfoItem()
             item_fields = item.fields.keys()
             restaurant_data.pop("distance")
             for key in restaurant_data.keys():

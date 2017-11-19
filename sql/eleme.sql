@@ -1,5 +1,7 @@
 CREATE DATABASE eleme;
 USE eleme;
+
+
 CREATE TABLE all_points (
   latitude DOUBLE,
   longitude DOUBLE,
@@ -52,4 +54,4 @@ CREATE TABLE restaurant_info (
 CREATE TABLE menu_info (
   restaurant_id BIGINT PRIMARY KEY,
   menu MEDIUMTEXT
-);
+) ;

@@ -4,9 +4,9 @@ from urllib.parse import unquote, urlencode
 
 import scrapy
 
-from eleme import settings
-from eleme.items import GeoPointsItem
-from eleme.mysqlhelper import *
+from waimai import settings
+from waimai.items import GeoPointsItem
+from waimai.mysqlhelper import *
 
 
 def get_allpoints(lat1, lng1, lat2, lng2, d_lat, d_lng, other_area=None, edge=False):

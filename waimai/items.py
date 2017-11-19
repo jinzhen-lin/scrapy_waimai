@@ -13,7 +13,7 @@ class GeoPointsItem(scrapy.Item):
     longitude = scrapy.Field()
 
 
-class BaseInfoItem(scrapy.Item):
+class ElemeBaseInfoItem(scrapy.Item):
     activities = scrapy.Field()
     address = scrapy.Field()
     authentic_id = scrapy.Field()
@@ -47,12 +47,12 @@ class BaseInfoItem(scrapy.Item):
     supports = scrapy.Field()
 
 
-class MenuItem(scrapy.Item):
+class ElemeMenuItem(scrapy.Item):
     restaurant_id = scrapy.Field()
     menu = scrapy.Field()
 
 
-class RatingScoresItem(scrapy.Item):
+class ElemeRatingScoresItem(scrapy.Item):
     restaurant_id = scrapy.Field()
     compare_rating = scrapy.Field()
     food_score = scrapy.Field()
@@ -61,7 +61,7 @@ class RatingScoresItem(scrapy.Item):
     star_level = scrapy.Field()
 
 
-class LocationItem(scrapy.Item):
+class ElemeLocationItem(scrapy.Item):
     restaurant_id = scrapy.Field()
     district = scrapy.Field()
     address = scrapy.Field()

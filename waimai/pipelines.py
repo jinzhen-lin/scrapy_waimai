@@ -10,8 +10,8 @@ import traceback
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import mysql.connector
 
-from eleme import settings
-from eleme.mysqlhelper import *
+from waimai import settings
+from waimai.mysqlhelper import *
 
 
 class ElemePipeline(object):

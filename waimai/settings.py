@@ -2,9 +2,9 @@
 import base64
 import random
 
-from eleme.useragent import USER_AGENTS_LIST
+from waimai.useragent import USER_AGENTS_LIST
 
-# Scrapy settings for eleme project
+# Scrapy settings for waimai project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -13,14 +13,14 @@ from eleme.useragent import USER_AGENTS_LIST
 #     http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #     http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'eleme'
+BOT_NAME = 'waimai'
 
-SPIDER_MODULES = ['eleme.spiders']
-NEWSPIDER_MODULE = 'eleme.spiders'
+SPIDER_MODULES = ['waimai.spiders']
+NEWSPIDER_MODULE = 'waimai.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'eleme (+http://www.yourdomain.com)'
+#USER_AGENT = 'waimai (+http://www.yourdomain.com)'
 USER_AGENT = random.choice(USER_AGENTS_LIST)
 
 # Obey robots.txt rules
@@ -53,14 +53,14 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 # SPIDER_MIDDLEWARES = {
-#    'eleme.middlewares.ElemeSpiderMiddleware': 543,
+#    'waimai.middlewares.WaimaiSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
-    'eleme.middlewares.ElemeDownloaderMiddleware': 543,
+    'waimai.middlewares.WaimaiDownloaderMiddleware': 543,
 }
 
 # Enable or disable extensions
@@ -73,7 +73,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'eleme.pipelines.ElemePipeline': 300,
+    'waimai.pipelines.WaimaiPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

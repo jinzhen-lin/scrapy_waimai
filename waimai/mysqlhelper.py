@@ -3,7 +3,7 @@
 
 import mysql.connector
 
-from eleme import settings
+from waimai import settings
 
 cnx = mysql.connector.connect(
     user=settings.MYSQL_USER,

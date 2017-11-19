@@ -3,18 +3,18 @@ import json
 
 import scrapy
 
-from eleme import settings
-from eleme.items import RatingScoresItem
-from eleme.mysqlhelper import *
+from waimai import settings
+from waimai.items import ElemeRatingScoresItem
+from waimai.mysqlhelper import *
 
 
-class RatingScoresSpider(scrapy.Spider):
+class ElemeRatingScoresSpider(scrapy.Spider):
     """获取商家评分信息
 
     获取尚未爬取评分的商家ID，拼接URL构建start_urls
     把结果交给pipeline
     """
-    name = "rating_scores"
+    name = "waimai_rating_scores"
     allowed_domains = ["ele.me"]
     base_url = "https://www.ele.me/restapi/ugc/v1/restaurants/%s/rating_scores?latitude=%s&longitude=%s"
 
@@ -26,7 +26,7 @@ class RatingScoresSpider(scrapy.Spider):
 
     def parse(self, response):
         if 200 == response.status:
-            item = RatingScoresItem()
+            item = ElemeRatingScoresItem()
             jsondata = json.loads(response.text)
             item["restaurant_id"] = response.url.split("/")[-2]
             for key in jsondata.keys():

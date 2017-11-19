@@ -3,18 +3,18 @@ import json
 
 import scrapy
 
-from eleme import settings
-from eleme.items import MenuItem
-from eleme.mysqlhelper import *
+from waimai import settings
+from waimai.items import ElemeMenuItem
+from waimai.mysqlhelper import *
 
 
-class MenuSpider(scrapy.Spider):
+class ElemeMenuSpider(scrapy.Spider):
     """获取商家菜单信息
 
     获取尚未获取menu的商家ID，拼接URL构建start_urls
     把结果交给pipeline
     """
-    name = "menu"
+    name = "waimai_menu"
     allowed_domains = ["ele.me"]
     base_url = "https://www.ele.me/restapi/shopping/v2/menu?restaurant_id="
 
@@ -33,7 +33,7 @@ class MenuSpider(scrapy.Spider):
 
     def parse(self, response):
         if 200 == response.status:
-            item = MenuItem()
+            item = ElemeMenuItem()
             item["menu"] = response.text
             item["restaurant_id"] = response.url.split("=")[-1]
             yield item
