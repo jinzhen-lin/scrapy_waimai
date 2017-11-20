@@ -39,7 +39,7 @@ class MeituanBaseInfoSpider(scrapy.Spider):
             if next_page:
                 post_data["page_index"] = str(int(post_data["page_index"]) + 1)
                 encryptor.data = post_data
-        
+
         token = encryptor.get_token()
         url = self.base_url2 + token
 

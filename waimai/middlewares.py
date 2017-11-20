@@ -26,7 +26,10 @@ class WaimaiDownloaderMiddleware(UserAgentMiddleware):
     def process_request(self, request, spider):
         ua = random.choice(settings.USER_AGENTS_LIST)
         request.headers['User-Agent'] = ua
-        if spider.allowed_domains[0] in ["ele.me"] and settings.PROXY_ENABLED:
+        if "POST" == request.method and spider.name.find("meituan_") == 0:
+            request.headers['Content-Type'] = "application/x-www-form-urlencoded"
+            request.headers['Accept'] = "application/json"
+        if spider.allowed_domains[0] in ["ele.me", "meituan.com"] and settings.PROXY_ENABLED:
             request.meta["proxy"] = settings.PROXY_SERVER
             request.headers["Proxy-Authorization"] = settings.PROXY_AUTH
 
