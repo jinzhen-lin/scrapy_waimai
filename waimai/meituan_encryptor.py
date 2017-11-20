@@ -44,9 +44,9 @@ class MeituanEncryptor():
         base64_str = base64.b64encode(compressed_data).decode()
         return base64_str
 
-    def get_token(self):
+    def get_token(self, rid=100009):
         token_data = {
-            "rId": 100009,
+            "rId": rid,
             "ts": round(time.time() * 1000),
             "cts": round(time.time() * 1000) + round(random.random() * 700),
             "brVD": random.choice(self.brVD_list),

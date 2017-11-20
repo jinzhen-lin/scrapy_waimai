@@ -121,3 +121,5 @@ class MeituanSubPipeline(ElemeSubPipeline):
             # 如果数据库中没有这个商家则插入，有这个商家则跳过
             if not self.select_restaurant_id(item["restaurant_id"]):
                 self.insert_restaurant_info(item)
+        elif "meituan_menu" == spider.name:
+            self.insert_menu(item)

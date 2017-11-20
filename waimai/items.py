@@ -110,3 +110,8 @@ class MeituanBaseInfoItem(scrapy.Item):
     wm_poi_opening_days = scrapy.Field()
     wm_poi_score = scrapy.Field()
     wm_poi_view_id = scrapy.Field()
+
+
+class MeituanMenuItem(scrapy.Item):
+    restaurant_id = scrapy.Field()
+    menu = scrapy.Field()
