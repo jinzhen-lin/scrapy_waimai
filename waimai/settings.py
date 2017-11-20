@@ -143,3 +143,8 @@ POINTS_RANGE = [39.45, 115.43, 41.06, 117.52, 0.01, 0.01]
 POINTS_OTHER_AREA = [[39.84, 116.3, 40, 116.45, 0.003, 0.003]]
 # POINTS_AREA_EDGE 如果按坐标范围规则无法取到最大纬度和经度上的点，那么是否添加这些点
 POINTS_AREA_EDGE = True
+
+
+# 美团专用选项
+# MEITUAN_RETRY_TIMES 当爬虫被美团发现后在报错停止前的重试次数
+MEITUAN_RETRY_TIMES = 3

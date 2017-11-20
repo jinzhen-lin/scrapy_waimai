@@ -27,7 +27,7 @@ class MeituanMenuSpider(scrapy.Spider):
             meta = {"cookiejar": restaurant_id[0]}
             yield scrapy.Request(url, meta=meta)
 
-    def contruct_request(self, response, post_data=None):
+    def contruct_request(self, response, post_data=None, other_info=None):
         if post_data is not None:
             encryptor = MeituanEncryptor(post_data, response.url)
         else:
@@ -39,7 +39,8 @@ class MeituanMenuSpider(scrapy.Spider):
 
         meta = {
             "encryptor": encryptor,
-            "cookiejar": response.meta["cookiejar"]
+            "cookiejar": response.meta["cookiejar"],
+            "other_info": other_info if other_info is not None else {}
         }
         return scrapy.FormRequest(
             url,
@@ -65,6 +66,16 @@ class MeituanMenuSpider(scrapy.Spider):
             jsondata = json.loads(response.text)
         except json.decoder.JSONDecodeError:
             return self.contruct_request(response)
+
+        if jsondata["code"] == 406:
+            other_info = response.meta["other_info"]
+            if "retry_times" not in other_info.keys():
+                other_info["retry_times"] = 0
+            if other_info["retry_times"] >= settings.MEITUAN_RETRY_TIMES:
+                raise scrapy.exceptions.CloseSpider("爬虫已被美团发现，请更换IP")
+            other_info["retry_times"] += 1
+            yield self.contruct_request(response, other_info=other_info)
+            return None
 
         item = MeituanMenuItem()
         item["restaurant_id"] = jsondata["data"]["poi_info"]["id"]
