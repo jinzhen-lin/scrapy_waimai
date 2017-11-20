@@ -11,7 +11,7 @@ from waimai.mysqlhelper import *
 class ElemeMenuSpider(scrapy.Spider):
     """获取商家菜单信息
 
-    获取尚未获取menu的商家ID，拼接URL构建start_urls
+    获取尚未获取menu的商家ID，拼接URL构造请求
     把结果交给pipeline
     """
     name = "eleme_menu"

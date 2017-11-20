@@ -12,7 +12,7 @@ from waimai.mysqlhelper import *
 class ElemeBaseInfoSpider(scrapy.Spider):
     """从搜索页爬取商家的基本信息
 
-    从数据库提取尚爬取的坐标点，拼接url，添加到start_urls中
+    从数据库提取尚爬取的坐标点，拼接url，构造请求
     对于每次爬取，从中提取出每个商家信息，交给pipeline
     如果当前坐标点还有其他商家未获取，则offset加上30，重新爬取
     """
@@ -21,7 +21,6 @@ class ElemeBaseInfoSpider(scrapy.Spider):
     base_url = "https://mainsite-restapi.ele.me/shopping/restaurants" + "?extras[]=activities&extras[]=flavors&"
 
     def start_requests(self):
-        start_urls = []
         # 饿了么的搜索页面每页最多30个商家，并且每个搜索组合只能获取最多750个
         params = {
             "latitude": "",

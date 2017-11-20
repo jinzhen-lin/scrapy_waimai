@@ -12,7 +12,7 @@ from waimai.mysqlhelper import *
 class ElemeLocationSpider(scrapy.Spider):
     """获取商家所在的district（市辖区/县级市/县）
 
-    从数据库提取尚未获取district的商家ID和位置，拼接URL构建start_urls
+    从数据库提取尚未获取district的商家ID和位置，拼接URL构造请求
     从结果中提取坐标点对应的district和address，交给pipeline
     """
     name = "eleme_location"

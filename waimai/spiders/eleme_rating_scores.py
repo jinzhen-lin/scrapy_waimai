@@ -11,7 +11,7 @@ from waimai.mysqlhelper import *
 class ElemeRatingScoresSpider(scrapy.Spider):
     """获取商家评分信息
 
-    获取尚未爬取评分的商家ID，拼接URL构建start_urls
+    获取尚未爬取评分的商家ID，拼接URL构造请求
     把结果交给pipeline
     """
     name = "eleme_rating_scores"
