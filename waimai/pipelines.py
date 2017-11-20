@@ -22,7 +22,23 @@ class WaimaiPipeline(object):
         # 根据spider名称选择需要进行的操作
         if "geo_points" == spider.name:
             self.insert_point(item)
-        elif "eleme_base_info" == spider.name:
+        elif spider.name.find("eleme_") == 0:
+            ElemeSubPipeline().process_item(item, spider)
+        elif spider.name.find("meituan_") == 0:
+            MeituanSubPipeline().process_item(item, spider)
+
+    def insert_point(self, item):
+        """将坐标点放入数据库
+        """
+        sql = "INSERT INTO all_points (latitude, longitude) VALUES (%(latitude)s, %(longitude)s)"
+        cur.execute(sql % item)
+        cnx.commit()
+
+
+class ElemeSubPipeline(object):
+
+    def process_item(self, item, spider):
+        if "eleme_base_info" == spider.name:
             # 如果数据库中没有这个商家则插入，有这个商家则跳过
             if not self.select_restaurant_id(item["restaurant_id"]):
                 self.insert_restaurant_info(item)
@@ -32,13 +48,6 @@ class WaimaiPipeline(object):
             self.update_rating_scores(item)
         elif "eleme_location" == spider.name:
             self.update_location(item)
-
-    def insert_point(self, item):
-        """将坐标点放入数据库
-        """
-        sql = "INSERT INTO all_points (latitude, longitude) VALUES (%(latitude)s, %(longitude)s)"
-        cur.execute(sql % item)
-        cnx.commit()
 
     def update_location(self, item):
         """更新商家的位置信息(district, address)
@@ -103,3 +112,12 @@ class WaimaiPipeline(object):
         sql = "SELECT * FROM restaurant_info WHERE restaurant_id = %s"
         cur.execute(sql % restaurant_id)
         return cur.fetchall()
+
+
+class MeituanSubPipeline(ElemeSubPipeline):
+
+    def process_item(self, item, spider):
+        if "meituan_base_info" == spider.name:
+            # 如果数据库中没有这个商家则插入，有这个商家则跳过
+            if not self.select_restaurant_id(item["restaurant_id"]):
+                self.insert_restaurant_info(item)
