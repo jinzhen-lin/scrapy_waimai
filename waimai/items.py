@@ -62,7 +62,8 @@ class ElemeRatingScoresItem(scrapy.Item):
 
 
 class ElemeLocationItem(scrapy.Item):
-    restaurant_id = scrapy.Field()
+    latitude = scrapy.Field()
+    longitude = scrapy.Field()
     district = scrapy.Field()
     address = scrapy.Field()
 

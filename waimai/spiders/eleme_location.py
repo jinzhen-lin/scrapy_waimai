@@ -21,7 +21,7 @@ class ElemeLocationSpider(scrapy.Spider):
     base_url = "http://api.map.baidu.com/geocoder/v2/?"
 
     def start_requests(self):
-        cur.execute("SELECT restaurant_id, latitude, longitude FROM restaurant_info WHERE district IS NULL")
+        cur.execute("SELECT latitude, longitude FROM restaurant_info WHERE district IS NULL")
         cnx.commit()
         all_restaurant_location = cur.fetchall()
         params = {
@@ -31,9 +31,9 @@ class ElemeLocationSpider(scrapy.Spider):
             "coordtype": "gcj02ll"
         }
         for geo_point in all_restaurant_location:
-            params["location"] = "%s,%s" % (geo_point[1], geo_point[2])
+            params["location"] = "%s,%s" % (geo_point[0], geo_point[1])
             url = self.base_url + urlencode(params)
-            yield scrapy.Request(url, meta={"restaurant_id": geo_point[0]})
+            yield scrapy.Request(url, meta={"geo_point": geo_point})
 
     def parse(self, response):
         jsondata = json.loads(response.text)
@@ -41,5 +41,6 @@ class ElemeLocationSpider(scrapy.Spider):
         address = jsondata["result"]["addressComponent"]
         item["district"] = address["city"] + address["district"]
         item["address"] = jsondata["result"]["formatted_address"]
-        item["restaurant_id"] = response.meta["restaurant_id"]
+        item["latitude"] = response.meta["geo_point"][0]
+        item["longitude"] = response.meta["geo_point"][1]
         yield item
