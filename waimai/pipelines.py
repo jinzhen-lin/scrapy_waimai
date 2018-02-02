@@ -55,7 +55,7 @@ class ElemeSubPipeline(object):
         sql = """
             UPDATE restaurant_info 
             SET district='%(district)s', address_baidu='%(address)s' 
-            WhERE latitude = '%(latitude)s' AND longitude = '%(longitude)s'
+            WhERE restaurant_id = '%(restaurant_id)s'
         """
         cur.execute(sql % item)
         cnx.commit()
