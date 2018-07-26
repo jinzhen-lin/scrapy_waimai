@@ -1,90 +1,166 @@
 # -*- coding: utf-8 -*-
 import json
+import random
 import re
+import time
 from urllib.parse import urlencode
 
 import scrapy
-
+from scrapy.http.cookies import CookieJar
+from scrapy.shell import inspect_response
+from twisted.web.http_headers import Headers as TwistedHeaders
 from waimai import settings
 from waimai.items import MeituanBaseInfoItem
 from waimai.meituan_encryptor import MeituanEncryptor
 from waimai.mysqlhelper import *
+from waimai.settings import USER_AGENTS_LIST
 
 
 class MeituanBaseInfoSpider(scrapy.Spider):
+    TwistedHeaders._caseMappings.update({
+        b"x-for-with": b"X-FOR-WITH"
+    })
     name = "meituan_base_info"
     allowed_domains = ["meituan.com"]
-    base_url1 = "http://i.waimai.meituan.com/home?"
-    base_url2 = "http://i.waimai.meituan.com/ajax/v6/poi/filter?_token="
+    base_url1 = "http://i.waimai.meituan.com/home?lat=%s&lng=%s"
+    base_url2 = "http://i.waimai.meituan.com/ajax/v6/poi/filter?_token=%s"
+
+    HEADERS1 = {
+        "Pragma": "no-cache",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Connection": "keep-alive",
+        "Host": "i.waimai.meituan.com",
+        "Upgrade-Insecure-Requests": "1"
+    }
+
+    HEADERS2 = {
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache",
+        "Accept": "application/json",
+        "Accept-Encoding": "gzip, deflate",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        "Connection": "keep-alive",
+        "Host": "i.waimai.meituan.com",
+        "Upgrade-Insecure-Requests": "1",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Origin": "http://i.waimai.meituan.com",
+        "Referer": "",
+        "X-Requested-With": "XMLHttpRequest",
+        "X-FOR-WITH": ""
+    }
 
     def start_requests(self):
-        params = {}
         cur.execute("SELECT latitude, longitude FROM all_points WHERE status IS NULL")
         geo_data = cur.fetchall()
+        random.shuffle(geo_data)
         for i, geo_point in enumerate(geo_data):
-            params["lat"], params["lng"] = geo_point
-            urlparams = urlencode(params)
             meta = {
-                "cookiejar": i,
-                "geo_point": params
+                "cookiejar": str(random.random()),
+                "geo_point": geo_point,
+                "home_url": self.base_url1 % geo_point
             }
-            yield scrapy.Request(self.base_url1 + urlparams, meta=meta)
+            headers0 = self.HEADERS1
+            ua = random.choice(USER_AGENTS_LIST)
+            headers0["User-Agent"] = ua
+            yield scrapy.Request(self.base_url1 % geo_point, meta=meta, headers=headers0)
 
-    def contruct_request(self, response, post_data=None, next_page=False, other_info=None):
+    def contruct_request(self, response, post_data=None, cookies=None, next_page=False):
         if post_data is not None:
-            encryptor = MeituanEncryptor(post_data, response.url)
+            ts = round(time.time() * 1000)
+            time.sleep(random.random() / 5 + 0.1)
+            geo_point = response.meta["geo_point"]
+            sign_data = post_data
+            encryptor = MeituanEncryptor(sign_data, response.url, ts)
+            mta = encryptor.get_mta(cookies, response.request.headers["User-Agent"].decode())
+            lxsdk = encryptor.get_lxsdk(response.request.headers["User-Agent"].decode())
+            lxsdk_s = encryptor.get_lxsdk_s()
+            cookies = {
+                "__mta": mta,
+                "_lxsdk_cuid": lxsdk,
+                "_lxsdk": lxsdk,
+                "_lxsdk_s": lxsdk_s
+            }
+            x_for_with = encryptor.get_xforwith(response.body).decode()
         else:
             encryptor = response.meta["encryptor"]
-            post_data = encryptor.data
             if next_page:
+                post_data = encryptor.data
                 post_data["page_index"] = str(int(post_data["page_index"]) + 1)
                 encryptor.data = post_data
+            cookies = {}
+            x_for_with = encryptor.get_xforwith().decode()
 
         token = encryptor.get_token()
-        url = self.base_url2 + token
-
+        url = self.base_url2 % token
         meta = {
+            "home_url": response.meta["home_url"],
             "encryptor": encryptor,
             "cookiejar": response.meta["cookiejar"],
-            "geo_point": response.meta["geo_point"],
-            "other_info": other_info if other_info is not None else {}
+            "geo_point": response.meta["geo_point"]
         }
+
+        headers1 = self.HEADERS2
+        headers1["User-Agent"] = response.request.headers["User-Agent"]
+        headers1["Referer"] = response.url
+        headers1["X-FOR-WITH"] = x_for_with
         return scrapy.FormRequest(
             url,
+            headers=headers1,
+            cookies=cookies,
             meta=meta,
             formdata=post_data,
             callback=self.parse_restaurant
         )
 
     def parse(self, response):
-        cookies_list = response.headers.getlist("Set-Cookie")
-        uuid = [re.findall("w_uuid=(.*?);", x.decode()) for x in cookies_list]
-        uuid = sum(uuid, [])[0]
-        post_data = {
-            "uuid": uuid,
-            "platform": "3",
-            "partner": "4",
-            "page_index": "0",
-            "apage": "1",
-            "page_size": "300",
-            "sort_type": "5"
-        }
-        yield self.contruct_request(response, post_data)
+        cookiejar = CookieJar()
+        cookiejar.extract_cookies(response, response.request)
+        cookies = cookiejar._cookies["i.waimai.meituan.com"]["/"]
+        cookies = {key: cookies[key].value for key in cookies}
+        uuid = cookies["w_uuid"]
+        if "post_data" in response.meta.keys():
+            post_data = response.meta["post_data"]
+        else:
+            geo_point = response.meta["geo_point"]
+            post_data = {
+                "platform": "3",
+                "partner": "4",
+                "page_index": "0",
+                "apage": "1",
+                # "page_size": "30",
+                "sort_type": "5",
+                "lat": str(geo_point[0]),
+                "lng": str(geo_point[1])
+            }
+        post_data["uuid"] = uuid
+        yield self.contruct_request(response, post_data, cookies)
 
     def parse_restaurant(self, response):
+        #inspect_response(response, self)
         try:
             jsondata = json.loads(response.text)
         except json.decoder.JSONDecodeError:
             return self.contruct_request(response)
 
-        if jsondata["code"] == 406:
-            other_info = response.meta["other_info"]
-            if "retry_times" not in other_info.keys():
-                other_info["retry_times"] = 0
-            if other_info["retry_times"] >= settings.MEITUAN_RETRY_TIMES:
-                raise scrapy.exceptions.CloseSpider("爬虫已被美团发现，请更换IP")
-            other_info["retry_times"] += 1
-            yield self.contruct_request(response, other_info=other_info)
+        if "poi_has_next_page" not in jsondata["data"].keys():
+            headers0 = self.HEADERS1
+            headers0["User-Agent"] = response.request.headers["User-Agent"]
+            meta = {
+                "home_url": response.meta["home_url"],
+                "cookiejar": str(random.random()),
+                "geo_point": response.meta["geo_point"],
+                "post_data": response.meta["encryptor"].data
+            }
+            if int(meta["post_data"]["page_index"]) <= 5:
+                yield scrapy.Request(
+                    meta["home_url"], meta=meta, headers=headers0, dont_filter=True
+                )
+            else:
+                sql = "UPDATE all_points SET status = 'PAGE6' WHERE latitude = '%s' AND longitude = '%s'"
+                cur.execute(sql % response.meta["geo_point"])
+                cnx.commit()
             return None
 
         for restaurant_data in jsondata["data"]["poilist"]:
@@ -100,6 +176,6 @@ class MeituanBaseInfoSpider(scrapy.Spider):
             yield self.contruct_request(response, next_page=True)
         elif 200 == response.status:
             # 如果正常返回，并且已经没有没有未爬取的商家，则把坐标点已爬取状态设为“OK”
-            sql = "UPDATE all_points SET status = 'OK' WHERE latitude = '%(lat)s' AND longitude = '%(lng)s'"
+            sql = "UPDATE all_points SET status = 'OK' WHERE latitude = '%s' AND longitude = '%s'"
             cur.execute(sql % response.meta["geo_point"])
             cnx.commit()

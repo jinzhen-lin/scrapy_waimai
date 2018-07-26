@@ -32,7 +32,7 @@ CONCURRENT_REQUESTS = 30
 # Configure a delay for requests for the same website (default: 0)
 # See http://scrapy.readthedocs.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 0.18
+DOWNLOAD_DELAY = 0.2
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -100,7 +100,7 @@ ITEM_PIPELINES = {
 
 # Mysql Setting
 # WAIMAI_PLATFORM 外卖平台，仅用来选择数据库名称
-WAIMAI_PLATFORM = "eleme"
+WAIMAI_PLATFORM = "meituan"
 # MYSQL_DBNAME_LIST 指定各外卖平台爬取时存取数据使用的数据库
 MYSQL_DBNAME_LIST = {
     "eleme": "eleme",
