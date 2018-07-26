@@ -10,9 +10,8 @@ from scrapy.shell import inspect_response
 from twisted.web.http_headers import Headers as TwistedHeaders
 from waimai.items import MeituanQualItem
 from waimai.meituan_encryptor import MeituanEncryptor
-
 from waimai.mysqlhelper import *
-from waimai.settings import USER_AGENTS_LIST
+from waimai.settings import MEITUAN_MAX_RETRY_TIMES, USER_AGENTS_LIST
 
 
 class MeituanQualSpider(scrapy.Spider):
@@ -61,12 +60,22 @@ class MeituanQualSpider(scrapy.Spider):
         all_restaurants = cur.fetchall()
         random.shuffle(all_restaurants)
         for restaurant_id in all_restaurants:
-            url = self.base_url1 % str(restaurant_id[0])
-            meta = {"cookiejar": str(restaurant_id[0])}
-            headers1 = self.HEADERS1
-            ua = random.choice(USER_AGENTS_LIST)
-            headers1["User-Agent"] = ua
-            yield scrapy.Request(url, meta=meta, headers=headers1)
+            yield self.qual_pre_requests(restaurant_id)
+
+    def qual_pre_requests(self, restaurant_id, retry_times=0):
+        if retry_times > MEITUAN_MAX_RETRY_TIMES:
+            return None
+        if type(restaurant_id) == tuple:
+            restaurant_id = str(restaurant_id[0])
+        url = self.base_url1 % restaurant_id
+        meta = {
+            "cookiejar": restaurant_id,
+            "retry_times": retry_times
+        }
+        headers1 = self.HEADERS1
+        ua = random.choice(USER_AGENTS_LIST)
+        headers1["User-Agent"] = ua
+        return scrapy.Request(url, meta=meta, headers=headers1)
 
     def contruct_request(self, response, post_data=None, cookies=None):
         if post_data is not None:
@@ -93,7 +102,8 @@ class MeituanQualSpider(scrapy.Spider):
 
         meta = {
             "encryptor": encryptor,
-            "cookiejar": response.meta["cookiejar"]
+            "cookiejar": response.meta["cookiejar"],
+            "retry_times": response.meta["retry_times"]
         }
         headers2 = self.HEADERS2
         headers2["User-Agent"] = response.request.headers["User-Agent"]
@@ -111,6 +121,12 @@ class MeituanQualSpider(scrapy.Spider):
     def parse(self, response):
         cookiejar = CookieJar()
         cookiejar.extract_cookies(response, response.request)
+        if "i.waimai.meituan.com" not in cookiejar._cookies.keys():
+            yield self.qual_pre_requests(
+                response.meta["cookiejar"],
+                response.meta["retry_times"] + 1
+            )
+            return None
         cookies = cookiejar._cookies["i.waimai.meituan.com"]["/"]
         cookies = {key: cookies[key].value for key in cookies}
         post_data = {
@@ -124,6 +140,13 @@ class MeituanQualSpider(scrapy.Spider):
             jsondata = json.loads(response.text)
         except json.decoder.JSONDecodeError:
             return self.contruct_request(response)
+
+        if response.text.find("account/login?backurl") != -1:
+            yield self.qual_pre_requests(
+                response.meta["cookiejar"],
+                response.meta["retry_times"] + 1
+            )
+            return None
 
         item = MeituanQualItem()
         item["restaurant_id"] = response.request.body.decode().split("=")[-1]

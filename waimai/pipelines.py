@@ -132,7 +132,10 @@ class MeituanSubPipeline(ElemeSubPipeline):
         sql = "INSERT INTO menu_info (restaurant_id, menu, special) VALUES ('%s', '%s', '%s')"
         # 为避免一些很神奇的错误，先进行BASE64编码
         menu_data = base64.b64encode(item["menu"].encode("utf-8")).decode()
-        special_data = base64.b64encode(item["special"].encode("utf-8")).decode()
+        if "special" in item.keys():
+            special_data = base64.b64encode(item["special"].encode("utf-8")).decode()
+        else:
+            special_data = ""
         cur.execute(sql % (item["restaurant_id"], menu_data, special_data))
         cnx.commit()
 
@@ -142,6 +145,9 @@ class MeituanSubPipeline(ElemeSubPipeline):
         sql = "INSERT INTO qual_info (restaurant_id, qual, qual_pic_url) VALUES ('%s', '%s', '%s')"
         # 为避免一些很神奇的错误，先进行BASE64编码
         qual_data = base64.b64encode(item["qual"].encode("utf-8")).decode()
-        pic_url = base64.b64encode(item["qual_pic_url"].encode("utf-8")).decode()
+        if "qual_pic_url" in item.keys():
+            pic_url = base64.b64encode(item["qual_pic_url"].encode("utf-8")).decode()
+        else:
+            pic_url = ""
         cur.execute(sql % (item["restaurant_id"], qual_data, pic_url))
         cnx.commit()

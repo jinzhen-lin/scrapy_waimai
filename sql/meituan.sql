@@ -70,5 +70,6 @@ CREATE TABLE menu_info (
 CREATE TABLE qual_info (
   restaurant_id BIGINT PRIMARY KEY,
   qual MEDIUMTEXT,
-  qual_pic_url TEXT
+  qual_pic_url TEXT,
+  pic_status CHAR(10)
 ) CHARSET=utf8;
