@@ -61,5 +61,14 @@ CREATE TABLE restaurant_info (
 
 CREATE TABLE menu_info (
   restaurant_id BIGINT PRIMARY KEY,
-  menu MEDIUMTEXT
-) ;
+  menu MEDIUMTEXT,
+  special TEXT
+) CHARSET=utf8;
+
+
+
+CREATE TABLE qual_info (
+  restaurant_id BIGINT PRIMARY KEY,
+  qual MEDIUMTEXT,
+  qual_pic_url TEXT
+) CHARSET=utf8;

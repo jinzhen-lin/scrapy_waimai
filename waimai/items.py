@@ -115,3 +115,10 @@ class MeituanBaseInfoItem(scrapy.Item):
 class MeituanMenuItem(scrapy.Item):
     restaurant_id = scrapy.Field()
     menu = scrapy.Field()
+    special = scrapy.Field()
+    
+    
+class MeituanQualItem(scrapy.Item):
+    restaurant_id = scrapy.Field()
+    qual = scrapy.Field()
+    qual_pic_url = scrapy.Field()

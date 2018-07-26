@@ -8,20 +8,22 @@ import scrapy
 from scrapy.http.cookies import CookieJar
 from scrapy.shell import inspect_response
 from twisted.web.http_headers import Headers as TwistedHeaders
-from waimai.items import MeituanMenuItem
+from waimai.items import MeituanQualItem
 from waimai.meituan_encryptor import MeituanEncryptor
+
 from waimai.mysqlhelper import *
 from waimai.settings import USER_AGENTS_LIST
 
 
-class MeituanMenuSpider(scrapy.Spider):
+class MeituanQualSpider(scrapy.Spider):
     TwistedHeaders._caseMappings.update({
         b"x-for-with": b"X-FOR-WITH"
     })
-    name = "meituan_menu"
-    allowed_domains = ["meituan.com"]
-    base_url1 = "http://i.waimai.meituan.com/restaurant/%s"
-    base_url2 = "http://i.waimai.meituan.com/ajax/v8/poi/food?_token=%s"
+    name = 'meituan_qual'
+    allowed_domains = ['meituan.com']
+
+    base_url1 = "http://i.waimai.meituan.com/poi/qualification/%s"
+    base_url2 = "http://i.waimai.meituan.com/ajax/v6/poi/qualification"
 
     HEADERS1 = {
         "Pragma": "no-cache",
@@ -36,7 +38,7 @@ class MeituanMenuSpider(scrapy.Spider):
     HEADERS2 = {
         "Pragma": "no-cache",
         "Cache-Control": "no-cache",
-        "Accept": "*/*",
+        "Accept": "application/json",
         "Accept-Encoding": "gzip, deflate",
         "Accept-Language": "zh-CN,zh;q=0.9",
         "Connection": "keep-alive",
@@ -52,7 +54,7 @@ class MeituanMenuSpider(scrapy.Spider):
     def start_requests(self):
         cur.execute("""
             SELECT restaurant_id FROM restaurant_info
-            LEFT JOIN (SELECT restaurant_id AS id FROM menu_info) AS t
+            LEFT JOIN (SELECT restaurant_id AS id FROM qual_info) AS t
             ON restaurant_info.restaurant_id = t.id
             WHERE t.id IS NULL
         """)
@@ -87,8 +89,7 @@ class MeituanMenuSpider(scrapy.Spider):
             cookies = {}
             x_for_with = encryptor.get_xforwith().decode()
 
-        token = encryptor.get_token(100010)
-        url = self.base_url2 + token
+        url = self.base_url2
 
         meta = {
             "encryptor": encryptor,
@@ -104,7 +105,7 @@ class MeituanMenuSpider(scrapy.Spider):
             meta=meta,
             cookies=cookies,
             formdata=post_data,
-            callback=self.parse_menu
+            callback=self.parse_qual
         )
 
     def parse(self, response):
@@ -112,25 +113,21 @@ class MeituanMenuSpider(scrapy.Spider):
         cookiejar.extract_cookies(response, response.request)
         cookies = cookiejar._cookies["i.waimai.meituan.com"]["/"]
         cookies = {key: cookies[key].value for key in cookies}
-        uuid = cookies["w_uuid"]
         post_data = {
-            "uuid": uuid,
-            "platform": "3",
-            "partner": "4",
             "wm_poi_id": response.meta["cookiejar"]
         }
         yield self.contruct_request(response, post_data, cookies)
 
-    def parse_menu(self, response):
-        inspect_response(response, self)
+    def parse_qual(self, response):
+        #inspect_response(response, self)
         try:
             jsondata = json.loads(response.text)
         except json.decoder.JSONDecodeError:
             return self.contruct_request(response)
 
-        item = MeituanMenuItem()
-        item["restaurant_id"] = jsondata["data"]["poi_info"]["id"]
-        item["menu"] = json.dumps(jsondata["data"]["food_spu_tags"], ensure_ascii=False)
-        if "container_operation_source" in jsondata["data"].keys():
-            item["special"] = json.dumps(jsondata["data"]["container_operation_source"], ensure_ascii=False)
+        item = MeituanQualItem()
+        item["restaurant_id"] = response.request.body.decode().split("=")[-1]
+        item["qual"] = json.dumps(jsondata["data"], ensure_ascii=False)
+        if "qualify_pics" in jsondata["data"].keys():
+            item["qual_pic_url"] = json.dumps(jsondata["data"]["qualify_pics"], ensure_ascii=False)
         yield item

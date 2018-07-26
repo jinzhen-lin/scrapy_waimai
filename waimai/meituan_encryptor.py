@@ -30,7 +30,7 @@ class MeituanEncryptor():
         clean_data = {
             key: value
             for key, value in self.data.items()
-            if key in ["lat", "lng", "apage", "page_index"]
+            if key not in ["uuid", "platform", "partner"]
         }
         sign_data = []
         for key in sorted(clean_data.keys()):

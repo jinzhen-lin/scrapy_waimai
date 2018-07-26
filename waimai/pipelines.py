@@ -123,3 +123,25 @@ class MeituanSubPipeline(ElemeSubPipeline):
                 self.insert_restaurant_info(item)
         elif "meituan_menu" == spider.name:
             self.insert_menu(item)
+        elif "meituan_qual" == spider.name:
+            self.insert_qual(item)
+
+    def insert_menu(self, item):
+        """将菜单内容放入数据库
+        """
+        sql = "INSERT INTO menu_info (restaurant_id, menu, special) VALUES ('%s', '%s', '%s')"
+        # 为避免一些很神奇的错误，先进行BASE64编码
+        menu_data = base64.b64encode(item["menu"].encode("utf-8")).decode()
+        special_data = base64.b64encode(item["special"].encode("utf-8")).decode()
+        cur.execute(sql % (item["restaurant_id"], menu_data, special_data))
+        cnx.commit()
+
+    def insert_qual(self, item):
+        """将营业执照内容放入数据库
+        """
+        sql = "INSERT INTO qual_info (restaurant_id, qual, qual_pic_url) VALUES ('%s', '%s', '%s')"
+        # 为避免一些很神奇的错误，先进行BASE64编码
+        qual_data = base64.b64encode(item["qual"].encode("utf-8")).decode()
+        pic_url = base64.b64encode(item["qual_pic_url"].encode("utf-8")).decode()
+        cur.execute(sql % (item["restaurant_id"], qual_data, pic_url))
+        cnx.commit()

@@ -61,10 +61,10 @@ class MeituanBaseInfoSpider(scrapy.Spider):
                 "geo_point": geo_point,
                 "home_url": self.base_url1 % geo_point
             }
-            headers0 = self.HEADERS1
+            headers1 = self.HEADERS1
             ua = random.choice(USER_AGENTS_LIST)
-            headers0["User-Agent"] = ua
-            yield scrapy.Request(self.base_url1 % geo_point, meta=meta, headers=headers0)
+            headers1["User-Agent"] = ua
+            yield scrapy.Request(self.base_url1 % geo_point, meta=meta, headers=headers1)
 
     def contruct_request(self, response, post_data=None, cookies=None, next_page=False):
         if post_data is not None:
@@ -101,13 +101,13 @@ class MeituanBaseInfoSpider(scrapy.Spider):
             "geo_point": response.meta["geo_point"]
         }
 
-        headers1 = self.HEADERS2
-        headers1["User-Agent"] = response.request.headers["User-Agent"]
-        headers1["Referer"] = response.url
-        headers1["X-FOR-WITH"] = x_for_with
+        headers2 = self.HEADERS2
+        headers2["User-Agent"] = response.request.headers["User-Agent"]
+        headers2["Referer"] = response.url
+        headers2["X-FOR-WITH"] = x_for_with
         return scrapy.FormRequest(
             url,
-            headers=headers1,
+            headers=headers2,
             cookies=cookies,
             meta=meta,
             formdata=post_data,
@@ -132,13 +132,14 @@ class MeituanBaseInfoSpider(scrapy.Spider):
                 # "page_size": "30",
                 "sort_type": "5",
                 "lat": str(geo_point[0]),
-                "lng": str(geo_point[1])
+                "lng": str(geo_point[1]),
+                "mtsi_font_css_version": ""
             }
         post_data["uuid"] = uuid
         yield self.contruct_request(response, post_data, cookies)
 
     def parse_restaurant(self, response):
-        #inspect_response(response, self)
+        inspect_response(response, self)
         try:
             jsondata = json.loads(response.text)
         except json.decoder.JSONDecodeError:
