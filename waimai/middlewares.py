@@ -25,9 +25,8 @@ class WaimaiDownloaderMiddleware(UserAgentMiddleware):
 
     def process_request(self, request, spider):
         ua = random.choice(settings.USER_AGENTS_LIST)
-        ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1"
-        # request.headers['User-Agent'] = ua
-        if spider.allowed_domains[0] in ["meituan.com"] and settings.PROXY_ENABLED:
+        request.headers['User-Agent'] = ua
+        if settings.PROXY_ENABLED:
             request.meta["proxy"] = settings.PROXY_SERVER
             request.headers["Proxy-Authorization"] = settings.PROXY_AUTH
 

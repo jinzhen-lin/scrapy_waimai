@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 import json
 import random
-import re
 import time
-from urllib.parse import urlencode
 
 import scrapy
 from scrapy.http.cookies import CookieJar
 from scrapy.shell import inspect_response
 from twisted.web.http_headers import Headers as TwistedHeaders
-from waimai import settings
 from waimai.items import MeituanBaseInfoItem
 from waimai.meituan_encryptor import MeituanEncryptor
 from waimai.mysqlhelper import *
@@ -17,14 +14,21 @@ from waimai.settings import USER_AGENTS_LIST
 
 
 class MeituanBaseInfoSpider(scrapy.Spider):
+    
+    name = "meituan_base_info"
+    allowed_domains = ["meituan.com"]
+    
+    # 访问home和获取附近商家两种请求所使用的url样式
+    base_url1 = "http://i.waimai.meituan.com/home?lat=%s&lng=%s"
+    base_url2 = "http://i.waimai.meituan.com/ajax/v6/poi/filter?_token=%s"
+    
+    # 防止twisted将X-FOR-WITH这个header修改为X-For-With
+    # 即这个header名称必须都是大写才能正常使用
     TwistedHeaders._caseMappings.update({
         b"x-for-with": b"X-FOR-WITH"
     })
-    name = "meituan_base_info"
-    allowed_domains = ["meituan.com"]
-    base_url1 = "http://i.waimai.meituan.com/home?lat=%s&lng=%s"
-    base_url2 = "http://i.waimai.meituan.com/ajax/v6/poi/filter?_token=%s"
-
+    
+    # 访问home页面使用的headers
     HEADERS1 = {
         "Pragma": "no-cache",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
@@ -34,7 +38,8 @@ class MeituanBaseInfoSpider(scrapy.Spider):
         "Host": "i.waimai.meituan.com",
         "Upgrade-Insecure-Requests": "1"
     }
-
+    
+    # 获取附近商家使用的headers
     HEADERS2 = {
         "Pragma": "no-cache",
         "Cache-Control": "no-cache",
